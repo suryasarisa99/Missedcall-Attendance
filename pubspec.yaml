@@ -1,0 +1,26 @@
+name: attendance
+description: "A new Flutter project."
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  call_log: ^6.0.1
+  collection: ^1.19.1
+  fl_chart: ^0.71.0
+  flutter:
+    sdk: flutter
+  fluttertoast: ^9.0.0
+  intl: ^0.20.2
+  permission_handler: ^12.0.1
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
