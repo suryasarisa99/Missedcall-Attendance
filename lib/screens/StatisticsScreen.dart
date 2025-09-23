@@ -25,6 +25,7 @@ class Statisticsscreen extends StatelessWidget {
 
     // final stats = _attendanceStats!;
     // final result = _attendanceResult!;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: Text("Statistics - $title")),
@@ -96,7 +97,7 @@ class Statisticsscreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      SizedBox(height: 200, child: _buildDailyChart()),
+                      SizedBox(height: 200, child: _buildDailyChart(cs)),
                     ],
                   ),
                 ),
@@ -204,13 +205,12 @@ class Statisticsscreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDailyChart() {
+  Widget _buildDailyChart(ColorScheme cs) {
     final dailyTotals = stats.dailyTotals;
     if (dailyTotals.isEmpty) return const SizedBox();
 
     final maxAttendance = dailyTotals.reduce((a, b) => a > b ? a : b);
     final safeMax = maxAttendance > 0 ? maxAttendance : 1;
-
     return SizedBox(
       height: 250,
       child: LineChart(
@@ -235,7 +235,7 @@ class Statisticsscreen extends StatelessWidget {
             ),
           ),
           gridData: FlGridData(
-            show: true,
+            // show: false,
             horizontalInterval: (safeMax / 5).ceilToDouble(),
           ),
           titlesData: FlTitlesData(
@@ -278,8 +278,14 @@ class Statisticsscreen extends StatelessWidget {
                 return FlSpot(entry.key.toDouble(), entry.value.toDouble());
               }).toList(),
               isCurved: true,
+              curveSmoothness: 0.4,
               gradient: LinearGradient(
-                colors: [Colors.blue.shade400, Colors.purple.shade400],
+                colors: [
+                  // Colors.blue.shade400,
+                  //  Colors.purple.shade400
+                  cs.primary,
+                  cs.tertiary,
+                ],
               ),
               barWidth: 3,
               dotData: FlDotData(show: true),
@@ -287,8 +293,10 @@ class Statisticsscreen extends StatelessWidget {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blue.withOpacity(0.3),
-                    Colors.purple.withOpacity(0.1),
+                    // Colors.blue.withOpacity(0.3),
+                    // Colors.purple.withOpacity(0.1),
+                    cs.primary.withValues(alpha: 0.3),
+                    cs.tertiary.withValues(alpha: 0.1),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,

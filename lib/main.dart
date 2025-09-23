@@ -11,7 +11,7 @@ void main() async {
 }
 
 // theme
-final seedColor = Colors.deepPurple;
+final seedColor = const Color.fromARGB(255, 255, 117, 117);
 final lightTheme = ThemeData(
   colorScheme: ColorScheme.fromSeed(
     seedColor: seedColor,

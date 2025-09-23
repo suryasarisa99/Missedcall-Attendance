@@ -6,8 +6,6 @@ class AttendanceManager {
   static final AttendanceManager _instance = AttendanceManager._internal();
   factory AttendanceManager() => _instance;
 
-  final ContactManager _contactManager = ContactManager();
-
   AttendanceManager._internal();
 
   /// get attendance of a specific month and year

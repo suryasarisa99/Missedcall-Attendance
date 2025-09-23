@@ -341,8 +341,12 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   @override
   Widget build(BuildContext context) {
     final selectionTitle = _getAppBarTitle();
+    final appBarColor = Theme.of(
+      context,
+    ).colorScheme.primaryContainer.withValues(alpha: 0.3);
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: appBarColor,
         title: Text(selectionTitle, style: TextStyle(fontSize: 20)),
         actions: [
           IconButton(
@@ -425,21 +429,24 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     const double dateColumnWidth = 80;
     final double totalWidth =
         nameColumnWidth + (dates.length * dateColumnWidth);
-
+    final cs = Theme.of(context).colorScheme;
+    final appBarColor = cs.primaryContainer.withValues(alpha: 0.22);
+    final dividerClr = Theme.of(context).dividerColor.withValues(alpha: 0.2);
+    final border = BorderSide(color: dividerClr, width: 0.5);
+    final titlesClr = cs.onPrimaryContainer.withValues(alpha: 0.9);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Fixed Header
         Container(
           width: double.infinity,
-          height: 50,
+          height: 38,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: appBarColor,
+            // color: Theme.of(context).colorScheme.surface,
             border: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).dividerColor,
-                width: 1,
-              ),
+              top: BorderSide(color: dividerClr, width: 1),
+              bottom: BorderSide(color: dividerClr, width: 1),
             ),
           ),
           child: SingleChildScrollView(
@@ -452,11 +459,12 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   // Name column header
                   Container(
                     width: nameColumnWidth,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     alignment: Alignment.centerLeft,
-                    child: const Text(
+                    child: Text(
                       'Name',
                       style: TextStyle(
+                        color: titlesClr,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -470,7 +478,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                       alignment: Alignment.center,
                       child: Text(
                         date,
-                        style: const TextStyle(
+                        style: TextStyle(
+                          color: titlesClr,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -528,6 +537,12 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                         return Container(
                           height: 50,
                           decoration: BoxDecoration(
+                            color: index % 2 == 1
+                                ? Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerLow
+                                      .withValues(alpha: 0.2)
+                                : null,
                             border: Border(
                               bottom: BorderSide(
                                 color: Theme.of(
@@ -540,7 +555,11 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                           child: Row(
                             children: [
                               // Name column
-                              _buildNameCell(contactName, nameColumnWidth),
+                              _buildNameCell(
+                                contactName,
+                                nameColumnWidth,
+                                color: cs.onSurfaceVariant,
+                              ),
                               // Attendance columns
                               ...entry.value.asMap().entries.map((
                                 attendanceEntry,
@@ -566,35 +585,46 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     );
   }
 
-  Widget _buildNameCell(String name, double width) {
+  Widget _buildNameCell(String name, double width, {Color? color}) {
     return Container(
       width: width,
       padding: const EdgeInsets.only(left: 12),
       alignment: Alignment.centerLeft,
       child: Text(
         name,
-        style: const TextStyle(fontSize: 13),
+        style: TextStyle(fontSize: 13, color: color),
         overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
   Widget _buildAttendanceCell(bool present, double width) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderClr = present
+        ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+        : (isDark
+              ? const Color.fromARGB(255, 196, 102, 102)
+              : Colors.red.shade700);
+    final bgClr = present
+        ? (isDark
+              ? Colors.green.withValues(alpha: 0.2)
+              : const Color.fromARGB(255, 56, 179, 73).withValues(alpha: 0.2))
+        : (isDark
+              ? Colors.red.withValues(alpha: 0.2)
+              : const Color.fromARGB(255, 255, 70, 56).withValues(alpha: 0.2));
+    final textClr = present
+        ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+        : (isDark ? Colors.red.shade300 : Colors.red.shade700);
     return Container(
       width: width,
       alignment: Alignment.center,
       child: Container(
-        width: 24,
-        height: 24,
+        width: 28,
+        height: 26,
         decoration: BoxDecoration(
-          color: present
-              ? Colors.green.withOpacity(0.2)
-              : Colors.red.withOpacity(0.2),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: present ? Colors.green : Colors.red,
-            width: 1,
-          ),
+          color: bgClr,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: borderClr, width: 1),
         ),
         child: Center(
           child: Text(
@@ -602,7 +632,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: present ? Colors.green.shade700 : Colors.red.shade700,
+              color: textClr,
             ),
           ),
         ),
@@ -614,11 +644,13 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     return Container(
       height: 50,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.12),
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-            width: 1,
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+            width: 0.5,
           ),
         ),
       ),
