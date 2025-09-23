@@ -122,7 +122,9 @@ class Statisticsscreen extends StatelessWidget {
                             .indexOf(phoneNumber);
                         final contactName =
                             contactManager.contacts[contactIndex].name;
-                        final presentDays = attendance.where((p) => p).length;
+                        final presentDays = attendance
+                            .where((p) => p != null)
+                            .length;
                         final percentage =
                             (presentDays / attendance.length * 100);
 

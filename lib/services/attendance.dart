@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:attendance/services/contact_manager.dart';
 import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';
@@ -77,12 +79,12 @@ class AttendanceManager {
       final totalDays = dates.length;
 
       // Initialize attendance map
-      final Map<String, List<bool>> attendance = {};
+      final Map<String, List<int?>> attendance = {};
       final contactsByNumber = contactManager.contactsByCleanedNumber;
 
       // Initialize attendance for all contacts
       for (var cleanedNumber in contactsByNumber.keys) {
-        attendance[cleanedNumber] = List.generate(totalDays, (_) => false);
+        attendance[cleanedNumber] = List.generate(totalDays, (_) => null);
       }
 
       // Process call logs
@@ -100,7 +102,7 @@ class AttendanceManager {
           final dayIndex = _getDayIndex(startDate, logDate);
 
           if (dayIndex >= 0 && dayIndex < totalDays) {
-            attendance[cleanedNumber]![dayIndex] = true;
+            attendance[cleanedNumber]![dayIndex] = entry.timestamp;
           }
         }
       }
@@ -170,13 +172,13 @@ class AttendanceManager {
     // Calculate daily totals
     final dailyTotals = List.generate(totalDays, (dayIndex) {
       return result.attendance.values
-          .where((attendance) => attendance[dayIndex])
+          .where((attendance) => attendance[dayIndex] != null)
           .length;
     });
 
     // Calculate student totals
     final studentTotals = result.attendance.map((phoneNumber, attendance) {
-      final presentDays = attendance.where((present) => present).length;
+      final presentDays = attendance.where((present) => present != null).length;
       return MapEntry(phoneNumber, presentDays);
     });
 
@@ -191,7 +193,7 @@ class AttendanceManager {
 }
 
 class AttendanceResult {
-  final Map<String, List<bool>> attendance;
+  final Map<String, List<int?>> attendance;
   final List<String> dates;
   final bool hasCurrentDate;
 
@@ -205,7 +207,9 @@ class AttendanceResult {
   int getPresentCountForDay(int dayIndex) {
     if (dayIndex < 0 || dayIndex >= dates.length) return 0;
 
-    return attendance.values.where((attendance) => attendance[dayIndex]).length;
+    return attendance.values
+        .where((attendance) => attendance[dayIndex] != null)
+        .length;
   }
 
   /// Get total present days for a specific student
@@ -213,7 +217,7 @@ class AttendanceResult {
     final studentAttendance = attendance[phoneNumber];
     if (studentAttendance == null) return 0;
 
-    return studentAttendance.where((present) => present).length;
+    return studentAttendance.where((present) => present != null).length;
   }
 
   /// Get attendance percentage for a student
@@ -229,7 +233,7 @@ class AttendanceResult {
     final totalPossibleAttendance = attendance.length * dates.length;
     final totalPresentAttendance = attendance.values
         .expand((attendance) => attendance)
-        .where((present) => present)
+        .where((present) => present != null)
         .length;
 
     return (totalPresentAttendance / totalPossibleAttendance) * 100;
@@ -239,12 +243,13 @@ class AttendanceResult {
 // for user attendance entry
 class AttendanceEntry {
   final String phoneNumber;
-  final List<bool> attendance;
+  final List<int?> attendance;
 
   AttendanceEntry({required this.phoneNumber, required this.attendance});
 
   /// Get total present days for this entry
-  int get totalPresentDays => attendance.where((present) => present).length;
+  int get totalPresentDays =>
+      attendance.where((present) => present != null).length;
 
   /// Get attendance percentage for this entry
   double get attendancePercentage =>

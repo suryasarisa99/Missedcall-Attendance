@@ -575,7 +575,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                                 return _buildAttendanceCell(
                                   present,
                                   dateColumnWidth,
-                                  name: contactName,
+                                  index: index,
                                 );
                               }),
                             ],
@@ -607,24 +607,25 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   }
 
   Widget _buildAttendanceCell(
-    bool present,
+    int? present,
     double width, {
-    required String name,
+    required int index,
   }) {
+    final contact = _contactManager.contacts[index];
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderClr = present
+    final borderClr = present != null
         ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
         : (isDark
               ? const Color.fromARGB(255, 196, 102, 102)
               : Colors.red.shade700);
-    final bgClr = present
+    final bgClr = present != null
         ? (isDark
               ? Colors.green.withValues(alpha: 0.2)
               : const Color.fromARGB(255, 56, 179, 73).withValues(alpha: 0.2))
         : (isDark
               ? Colors.red.withValues(alpha: 0.2)
               : const Color.fromARGB(255, 255, 70, 56).withValues(alpha: 0.2));
-    final textClr = present
+    final textClr = present != null
         ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
         : (isDark ? Colors.red.shade300 : Colors.red.shade700);
     return GestureDetector(
@@ -632,7 +633,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         debugPrint("bottom");
         scaffoldKey.currentState!.showBottomSheet((context) {
           return Container(
-            height: 200,
+            // height: 100,
             margin: const EdgeInsets.all(16),
             width: double.infinity,
             decoration: BoxDecoration(
@@ -648,24 +649,68 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 ).colorScheme.primaryContainer.withValues(alpha: 0.3),
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        contact.name,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: bgClr,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: borderClr, width: 1),
+                        ),
+                        child: Text(
+                          present != null ? "Present" : "Absent",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: textClr,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    present ? "Present" : "Absent",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: textClr,
-                    ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        contact.phoneNumber,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      const Spacer(),
+                      if (present != null)
+                        Text(
+                          "${DateFormat('hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(present))}  |  ${DateFormat('MMM d, yyyy').format(DateTime.fromMillisecondsSinceEpoch(present))}",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.8),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -686,7 +731,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
           ),
           child: Center(
             child: Text(
-              present ? "P" : "A",
+              present != null ? "P" : "A",
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
