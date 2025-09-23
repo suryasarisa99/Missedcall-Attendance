@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:attendance/screens/statistics_screen.dart';
 import 'package:attendance/services/attendance.dart';
 import 'package:attendance/services/contact_manager.dart';
@@ -7,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:phone_state/phone_state.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -37,6 +41,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   String _selectionType =
       Options.selectionType; // current_month, specific_month, range
 
+  bool prevResultHasCurrentDate = false;
+  StreamSubscription<PhoneState>? _phoneStateSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -64,10 +71,44 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     }
   }
 
+  void listenForCalls(PhoneState state) {
+    if (state.number == null) return;
+    log("Incoming call from: ${state.number} | ${state.status.name}");
+    if (_contactManager.contactsByCleanedNumber.containsKey(state.number)) {
+      debugPrint("Matched: ${state.number} | ${state.status.name}");
+      if (state.status == PhoneStateStatus.CALL_ENDED) {
+        Future.delayed(const Duration(seconds: 1), () {
+          loadData();
+        });
+      }
+    }
+  }
+
+  void handleCallListener() {
+    if (prevResultHasCurrentDate == false &&
+        (_attendanceResult?.hasCurrentDate ?? false)) {
+      _phoneStateSubscription = PhoneState.stream.listen(listenForCalls);
+      log("Call listener started");
+    }
+    if (prevResultHasCurrentDate == true &&
+        !(_attendanceResult?.hasCurrentDate ?? false)) {
+      _phoneStateSubscription?.cancel();
+      _phoneStateSubscription = null;
+      log("Call listener stopped");
+    }
+  }
+
+  // helper methods
+  setSelectionType(String type) {
+    _selectionType = type;
+    Options.selectionType = type;
+  }
+
   Future<void> loadData() async {
-    debugPrint("================================================");
+    if (_attendanceResult != null) {
+      prevResultHasCurrentDate = _attendanceResult!.hasCurrentDate;
+    }
     debugPrint("loading...");
-    debugPrint("================================================");
     switch (_selectionType) {
       case 'current_month':
         await _loadCurrentMonthAttendance();
@@ -79,6 +120,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         await _loadRangeAttendance(_selectedStartDate!, _selectedEndDate!);
         break;
     }
+    handleCallListener();
+    Fluttertoast.showToast(msg: "loading...", toastLength: Toast.LENGTH_SHORT);
   }
 
   // Setup bidirectional scroll synchronization
@@ -113,8 +156,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   Future<void> _loadCurrentMonthAttendance() async {
     setState(() {
       _isLoading = true;
-      _selectionType = 'current_month';
-      Options.selectionType = _selectionType;
+      setSelectionType('current_month');
     });
 
     final status = await Permission.phone.status;
@@ -137,11 +179,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         _attendanceResult = result;
         _attendanceStats = stats;
       });
-
-      Fluttertoast.showToast(
-        msg: "Attendance loaded successfully!",
-        toastLength: Toast.LENGTH_SHORT,
-      );
     } catch (e) {
       debugPrint('Error loading attendance: $e');
       Fluttertoast.showToast(
@@ -158,10 +195,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   Future<void> _loadSpecificMonthAttendance(int month, int year) async {
     setState(() {
       _isLoading = true;
-      _selectionType = 'specific_month';
+      setSelectionType('specific_month');
       _selectedMonth = month;
       _selectedYear = year;
-      Options.selectionType = _selectionType;
       Options.selectedMonth = month;
       Options.selectedYear = year;
     });
@@ -177,12 +213,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         _attendanceResult = result;
         _attendanceStats = stats;
       });
-
-      Fluttertoast.showToast(
-        msg:
-            "Attendance loaded for ${DateFormat('MMMM yyyy').format(DateTime(year, month))}",
-        toastLength: Toast.LENGTH_SHORT,
-      );
     } catch (e) {
       debugPrint('Error loading specific month attendance: $e');
       Fluttertoast.showToast(
@@ -202,10 +232,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   ) async {
     setState(() {
       _isLoading = true;
-      _selectionType = 'range';
+      setSelectionType('range');
       _selectedStartDate = startDate;
       _selectedEndDate = endDate;
-      Options.selectionType = _selectionType;
       Options.selectedStartDate = startDate;
       Options.selectedEndDate = endDate;
     });
@@ -224,11 +253,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         _attendanceResult = result;
         _attendanceStats = stats;
       });
-
-      Fluttertoast.showToast(
-        msg: "Attendance loaded for selected range",
-        toastLength: Toast.LENGTH_SHORT,
-      );
     } catch (e) {
       debugPrint('Error loading range attendance: $e');
       Fluttertoast.showToast(
@@ -501,10 +525,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 scrollDirection: Axis.horizontal,
                 child: RefreshIndicator(
                   onRefresh: loadData,
-                  backgroundColor: Colors.red,
-                  color: Colors.blue,
-                  displacement: 100,
-                  elevation: 3,
                   child: SizedBox(
                     width: totalWidth,
                     height: constraints.maxHeight,
