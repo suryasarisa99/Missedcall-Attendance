@@ -104,7 +104,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     Options.selectionType = type;
   }
 
-  Future<void> loadData() async {
+  Future<void> loadData({bool reload = false}) async {
     if (_attendanceResult != null) {
       prevResultHasCurrentDate = _attendanceResult!.hasCurrentDate;
     }
@@ -121,7 +121,15 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         break;
     }
     handleCallListener();
-    Fluttertoast.showToast(msg: "loading...", toastLength: Toast.LENGTH_SHORT);
+    if (reload) {
+      Fluttertoast.showToast(
+        msg: "Reloading",
+        toastLength: Toast.LENGTH_SHORT,
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.6),
+      );
+    }
   }
 
   // Setup bidirectional scroll synchronization
@@ -392,7 +400,10 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   },
             icon: Icon(Icons.analytics),
           ),
-          IconButton(icon: const Icon(Icons.refresh), onPressed: loadData),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => loadData(reload: true),
+          ),
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
@@ -443,7 +454,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         ],
       ),
       body: _attendanceResult == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: Text('loading...'))
           : _buildTableView(),
     );
   }
@@ -703,7 +714,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                         Text(
                           "${DateFormat('hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(present))}  |  ${DateFormat('MMM d, yyyy').format(DateTime.fromMillisecondsSinceEpoch(present))}",
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurfaceVariant
