@@ -19,12 +19,6 @@ class Statisticsscreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if (_attendanceStats == null) {
-    //   return const Center(child: Text('No statistics available'));
-    // }
-
-    // final stats = _attendanceStats!;
-    // final result = _attendanceResult!;
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(

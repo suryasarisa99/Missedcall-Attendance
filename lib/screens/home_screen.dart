@@ -1,4 +1,4 @@
-import 'package:attendance/screens/StatisticsScreen.dart';
+import 'package:attendance/screens/statistics_screen.dart';
 import 'package:attendance/services/attendance.dart';
 import 'package:attendance/services/contact_manager.dart';
 import 'package:attendance/services/options.dart';
@@ -21,7 +21,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   bool _isLoading = false;
   AttendanceResult? _attendanceResult;
   AttendanceStats? _attendanceStats;
-
+  var scaffoldKey = GlobalKey<ScaffoldState>();
   // Separate controllers for header and content
   final ScrollController _headerScrollController = ScrollController();
   final ScrollController _contentScrollController = ScrollController();
@@ -64,19 +64,19 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     }
   }
 
-  void loadData() {
+  Future<void> loadData() async {
     debugPrint("================================================");
     debugPrint("loading...");
     debugPrint("================================================");
     switch (_selectionType) {
       case 'current_month':
-        _loadCurrentMonthAttendance();
+        await _loadCurrentMonthAttendance();
         break;
       case 'specific_month':
-        _loadSpecificMonthAttendance(_selectedMonth!, _selectedYear!);
+        await _loadSpecificMonthAttendance(_selectedMonth!, _selectedYear!);
         break;
       case 'range':
-        _loadRangeAttendance(_selectedStartDate!, _selectedEndDate!);
+        await _loadRangeAttendance(_selectedStartDate!, _selectedEndDate!);
         break;
     }
   }
@@ -345,6 +345,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
       context,
     ).colorScheme.primaryContainer.withValues(alpha: 0.3);
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         backgroundColor: appBarColor,
         title: Text(selectionTitle, style: TextStyle(fontSize: 20)),
@@ -493,31 +494,17 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         ),
         // Scrollable Content with RefreshIndicator as the top-level parent
         Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              switch (_selectionType) {
-                case 'current_month':
-                  await _loadCurrentMonthAttendance();
-                  break;
-                case 'specific_month':
-                  await _loadSpecificMonthAttendance(
-                    _selectedMonth!,
-                    _selectedYear!,
-                  );
-                  break;
-                case 'range':
-                  await _loadRangeAttendance(
-                    _selectedStartDate!,
-                    _selectedEndDate!,
-                  );
-                  break;
-              }
-            },
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  controller: _contentScrollController,
-                  scrollDirection: Axis.horizontal,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                controller: _contentScrollController,
+                scrollDirection: Axis.horizontal,
+                child: RefreshIndicator(
+                  onRefresh: loadData,
+                  backgroundColor: Colors.red,
+                  color: Colors.blue,
+                  displacement: 100,
+                  elevation: 3,
                   child: SizedBox(
                     width: totalWidth,
                     height: constraints.maxHeight,
@@ -568,6 +555,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                                 return _buildAttendanceCell(
                                   present,
                                   dateColumnWidth,
+                                  name: contactName,
                                 );
                               }),
                             ],
@@ -576,9 +564,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                       },
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -598,7 +586,11 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     );
   }
 
-  Widget _buildAttendanceCell(bool present, double width) {
+  Widget _buildAttendanceCell(
+    bool present,
+    double width, {
+    required String name,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final borderClr = present
         ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
@@ -615,24 +607,71 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     final textClr = present
         ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
         : (isDark ? Colors.red.shade300 : Colors.red.shade700);
-    return Container(
-      width: width,
-      alignment: Alignment.center,
+    return GestureDetector(
+      onTap: () {
+        debugPrint("bottom");
+        scaffoldKey.currentState!.showBottomSheet((context) {
+          return Container(
+            height: 200,
+            margin: const EdgeInsets.all(16),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    present ? "Present" : "Absent",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: textClr,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }, backgroundColor: Colors.transparent);
+      },
       child: Container(
-        width: 28,
-        height: 26,
-        decoration: BoxDecoration(
-          color: bgClr,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: borderClr, width: 1),
-        ),
-        child: Center(
-          child: Text(
-            present ? "P" : "A",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: textClr,
+        width: width,
+        alignment: Alignment.center,
+        child: Container(
+          width: 28,
+          height: 26,
+          decoration: BoxDecoration(
+            color: bgClr,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: borderClr, width: 1),
+          ),
+          child: Center(
+            child: Text(
+              present ? "P" : "A",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: textClr,
+              ),
             ),
           ),
         ),
