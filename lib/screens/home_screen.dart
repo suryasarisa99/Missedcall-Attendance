@@ -522,6 +522,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     final dividerClr = Theme.of(context).dividerColor.withValues(alpha: 0.2);
     final border = BorderSide(color: dividerClr, width: 0.5);
     final titlesClr = cs.onPrimaryContainer.withValues(alpha: 0.9);
+    final width = MediaQuery.sizeOf(context).width;
+    final scrollContainerWidth = totalWidth > width ? totalWidth : width;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -541,8 +544,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
             controller: _headerScrollController,
             scrollDirection: Axis.horizontal,
             child: SizedBox(
-              width: totalWidth,
+              width: scrollContainerWidth,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Name column header
                   Container(
@@ -589,7 +593,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 child: RefreshIndicator(
                   onRefresh: loadData,
                   child: SizedBox(
-                    width: totalWidth,
+                    width: scrollContainerWidth,
                     height: constraints.maxHeight,
                     child: ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -623,6 +627,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                             ),
                           ),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               // Name column
                               _buildNameCell(
@@ -822,6 +827,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildNameCell("Total", 120),
           // count of students present for each day
