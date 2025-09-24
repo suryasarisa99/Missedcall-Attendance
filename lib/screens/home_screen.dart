@@ -378,6 +378,12 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     );
   }
 
+  Future<void> navigateContactsList() {
+    return handleNavigate(const SelectedContacts()).then((_) {
+      loadData();
+    });
+  }
+
   Future<void> navigateSettings() {
     return handleNavigate(const SettingsScreen()).then((_) {
       if (Options.reloadOnPhoneCall) {
@@ -437,7 +443,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   _showRangePicker();
                   break;
                 case 'edit':
-                  handleNavigate(const SelectedContacts());
+                  navigateContactsList();
                   break;
                 case 'settings':
                   navigateSettings();

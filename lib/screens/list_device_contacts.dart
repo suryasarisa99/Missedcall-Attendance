@@ -21,7 +21,7 @@ class _ListDeviceContactsState extends State<ListDeviceContacts> {
   @override
   void initState() {
     super.initState();
-    requestPermission();
+    getContacts();
     searchController.addListener(handleSearch);
   }
 
@@ -75,23 +75,18 @@ class _ListDeviceContactsState extends State<ListDeviceContacts> {
     });
   }
 
-  void requestPermission() async {
-    final status = await FlutterContacts.requestPermission();
-    if (status) {
-      final x = await FlutterContacts.getContacts(withProperties: true);
-      setState(() {
-        contacts = x
-            .where(
-              (c) =>
-                  (c.phones.isNotEmpty &&
-                  c.phones.first.normalizedNumber.isNotEmpty),
-            )
-            .toList();
-      });
-      debugPrint('Number of contacts: ${x.length}');
-    } else {
-      debugPrint('Permission denied');
-    }
+  void getContacts() async {
+    final x = await FlutterContacts.getContacts(withProperties: true);
+    setState(() {
+      contacts = x
+          .where(
+            (c) =>
+                (c.phones.isNotEmpty &&
+                c.phones.first.normalizedNumber.isNotEmpty),
+          )
+          .toList();
+    });
+    debugPrint('Number of contacts: ${x.length}');
   }
 
   @override

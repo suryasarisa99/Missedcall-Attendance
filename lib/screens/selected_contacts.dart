@@ -139,7 +139,7 @@ class _SelectedContactsState extends State<SelectedContacts>
               ),
               child: const Icon(Icons.delete, color: Colors.white, size: 28),
             ),
-            confirmDismiss: confirmDismiss
+            confirmDismiss: !confirmDismiss
                 ? null
                 : (direction) async {
                     return await showDialog<bool>(
@@ -174,6 +174,9 @@ class _SelectedContactsState extends State<SelectedContacts>
               setState(() {
                 ContactManager.instance.removeContact(contact.phoneNumber);
               });
+
+              // Clear any existing SnackBar before showing new one
+              ScaffoldMessenger.of(context).clearSnackBars();
 
               // Show snackbar with undo option
               ScaffoldMessenger.of(context).showSnackBar(
