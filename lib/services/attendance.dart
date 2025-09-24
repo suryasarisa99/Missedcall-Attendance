@@ -37,7 +37,7 @@ class AttendanceManager {
     DateTime endDate,
   ) async {
     try {
-      final contactManager = ContactManager();
+      final contactManager = ContactManager.instance;
       final now = DateTime.now();
 
       // Check if the end date includes current date
@@ -80,11 +80,9 @@ class AttendanceManager {
 
       // Initialize attendance map
       final Map<String, List<int?>> attendance = {};
-      final contactsByNumber = contactManager.contactsByCleanedNumber;
 
-      // Initialize attendance for all contacts
-      for (var cleanedNumber in contactsByNumber.keys) {
-        attendance[cleanedNumber] = List.generate(totalDays, (_) => null);
+      for (var contact in contactManager.contacts) {
+        attendance[contact.phoneNumber] = List.generate(totalDays, (_) => null);
       }
 
       // Process call logs
@@ -92,8 +90,7 @@ class AttendanceManager {
         final String? number = entry.number;
         if (number == null) continue;
 
-        final cleanedNumber = contactManager.cleanPhoneNumber(number);
-        if (attendance.containsKey(cleanedNumber)) {
+        if (attendance.containsKey(number)) {
           final logDate = DateTime.fromMillisecondsSinceEpoch(
             entry.timestamp ?? 0,
           );
@@ -102,7 +99,7 @@ class AttendanceManager {
           final dayIndex = _getDayIndex(startDate, logDate);
 
           if (dayIndex >= 0 && dayIndex < totalDays) {
-            attendance[cleanedNumber]![dayIndex] = entry.timestamp;
+            attendance[number]![dayIndex] = entry.timestamp;
           }
         }
       }
@@ -152,8 +149,6 @@ class AttendanceManager {
     DateTime endDate,
   ) async {
     final result = await getAttendanceInRange(startDate, endDate);
-    final contactManager = ContactManager();
-
     return result.attendance.entries.map((entry) {
       return AttendanceEntry(phoneNumber: entry.key, attendance: entry.value);
     }).toList();

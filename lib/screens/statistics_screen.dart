@@ -57,7 +57,7 @@ class Statisticsscreen extends StatelessWidget {
                   Expanded(
                     child: _buildStatCard(
                       'Avg Attendance',
-                      '${stats.averageAttendancePerDay.toStringAsFixed(1)}',
+                      stats.averageAttendancePerDay.toStringAsFixed(1),
                       Icons.trending_up,
                       Colors.orange,
                     ),

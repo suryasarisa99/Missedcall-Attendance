@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:attendance/screens/selected_contacts.dart';
 import 'package:attendance/screens/statistics_screen.dart';
 import 'package:attendance/services/attendance.dart';
 import 'package:attendance/services/contact_manager.dart';
 import 'package:attendance/services/options.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +21,7 @@ class AttendanceScreen extends StatefulWidget {
 
 class _AttendanceScreenState extends State<AttendanceScreen>
     with WidgetsBindingObserver {
-  final ContactManager _contactManager = ContactManager();
+  final ContactManager _contactManager = ContactManager.instance;
   bool _isLoading = false;
   AttendanceResult? _attendanceResult;
   AttendanceStats? _attendanceStats;
@@ -74,7 +74,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   void listenForCalls(PhoneState state) {
     if (state.number == null) return;
     log("Incoming call from: ${state.number} | ${state.status.name}");
-    if (_contactManager.contactsByCleanedNumber.containsKey(state.number)) {
+    if (_contactManager.contacts.any((c) => c.phoneNumber == state.number)) {
       debugPrint("Matched: ${state.number} | ${state.status.name}");
       if (state.status == PhoneStateStatus.CALL_ENDED) {
         Future.delayed(const Duration(seconds: 1), () {
@@ -416,6 +416,14 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 case 'range':
                   _showRangePicker();
                   break;
+                case 'edit':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SelectedContacts(),
+                    ),
+                  ).then((_) => loadData());
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -446,6 +454,16 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                     Icon(Icons.date_range),
                     SizedBox(width: 8),
                     Text('Pick Range'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_add),
+                    SizedBox(width: 8),
+                    Text('Add/Edit Contacts'),
                   ],
                 ),
               ),
