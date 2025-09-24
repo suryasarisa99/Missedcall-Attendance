@@ -1,5 +1,7 @@
 import 'package:attendance/screens/list_device_contacts.dart';
 import 'package:attendance/services/contact_manager.dart';
+import 'package:attendance/services/options.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 
@@ -67,6 +69,7 @@ class _SelectedContactsState extends State<SelectedContacts>
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final confirmDismiss = Options.confirmSwipeToDelete;
     return Scaffold(
       appBar: AppBar(title: const Text('Selected Contacts')),
       floatingActionButton: Column(
@@ -125,6 +128,8 @@ class _SelectedContactsState extends State<SelectedContacts>
           return Dismissible(
             key: Key('${contact.phoneNumber}_$index'),
             direction: DismissDirection.endToStart,
+            crossAxisEndOffset: 0,
+            dismissThresholds: {DismissDirection.endToStart: 0.5},
             background: Container(
               alignment: Alignment.centerRight,
               padding: const EdgeInsets.only(right: 20.0),
@@ -134,33 +139,37 @@ class _SelectedContactsState extends State<SelectedContacts>
               ),
               child: const Icon(Icons.delete, color: Colors.white, size: 28),
             ),
-            // confirmDismiss: (direction) async {
-            //   return await showDialog<bool>(
-            //         context: context,
-            //         builder: (BuildContext context) {
-            //           return AlertDialog(
-            //             title: const Text('Delete Contact'),
-            //             content: Text(
-            //               'Are you sure you want to remove ${contact.name} from your selected contacts?',
-            //             ),
-            //             actions: [
-            //               TextButton(
-            //                 onPressed: () => Navigator.of(context).pop(false),
-            //                 child: const Text('Cancel'),
-            //               ),
-            //               TextButton(
-            //                 onPressed: () => Navigator.of(context).pop(true),
-            //                 style: TextButton.styleFrom(
-            //                   foregroundColor: Colors.red,
-            //                 ),
-            //                 child: const Text('Delete'),
-            //               ),
-            //             ],
-            //           );
-            //         },
-            //       ) ??
-            //       false;
-            // },
+            confirmDismiss: confirmDismiss
+                ? null
+                : (direction) async {
+                    return await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Delete Contact'),
+                              content: Text(
+                                'Are you sure you want to remove ${contact.name} from your selected contacts?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                  ),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            );
+                          },
+                        ) ??
+                        false;
+                  },
             onDismissed: (direction) {
               setState(() {
                 ContactManager.instance.removeContact(contact.phoneNumber);

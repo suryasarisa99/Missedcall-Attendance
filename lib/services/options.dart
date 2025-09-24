@@ -4,12 +4,9 @@ import 'package:flutter/cupertino.dart';
 class Options {
   Options._();
 
-  static String _selectionType = 'current_month';
-
   static String get selectionType =>
-      prefs?.getString('selectionType') ?? _selectionType;
+      prefs?.getString('selectionType') ?? 'current_month';
   static set selectionType(String value) {
-    _selectionType = value;
     debugPrint('Selection type set to: $value');
     prefs?.setString('selectionType', value);
   }
@@ -62,5 +59,25 @@ class Options {
     } else {
       prefs?.remove('selectedYear');
     }
+  }
+
+  static bool get confirmSwipeToDelete =>
+      prefs?.getBool('confirmSwipeToDelete') ?? true;
+  static set confirmSwipeToDelete(bool value) {
+    prefs?.setBool('confirmSwipeToDelete', value);
+  }
+
+  static bool get reloadOnAppResume =>
+      prefs?.getBool('reloadOnAppResume') ?? true;
+  static set reloadOnAppResume(bool value) {
+    prefs?.setBool('reloadOnAppResume', value);
+    debugPrint('Reload on app resume set to: $value');
+  }
+
+  static bool get reloadOnPhoneCall =>
+      prefs?.getBool('reloadOnPhoneCall') ?? true;
+  static set reloadOnPhoneCall(bool value) {
+    prefs?.setBool('reloadOnPhoneCall', value);
+    debugPrint('Reload on phone call set to: $value');
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:attendance/screens/selected_contacts.dart';
+import 'package:attendance/screens/settings_screen.dart';
 import 'package:attendance/screens/statistics_screen.dart';
 import 'package:attendance/services/attendance.dart';
 import 'package:attendance/services/contact_manager.dart';
@@ -41,7 +42,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   String _selectionType =
       Options.selectionType; // current_month, specific_month, range
 
-  bool prevResultHasCurrentDate = false;
   StreamSubscription<PhoneState>? _phoneStateSubscription;
 
   @override
@@ -63,7 +63,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (_attendanceResult?.hasCurrentDate ?? false) {
+      log("App resumed");
+      if (Options.reloadOnAppResume &&
+          (_attendanceResult?.hasCurrentDate ?? false)) {
         loadData();
       }
     } else if (state == AppLifecycleState.paused) {
@@ -85,12 +87,12 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   }
 
   void handleCallListener() {
-    if (prevResultHasCurrentDate == false &&
+    if (_phoneStateSubscription == null &&
         (_attendanceResult?.hasCurrentDate ?? false)) {
       _phoneStateSubscription = PhoneState.stream.listen(listenForCalls);
       log("Call listener started");
     }
-    if (prevResultHasCurrentDate == true &&
+    if (_phoneStateSubscription != null &&
         !(_attendanceResult?.hasCurrentDate ?? false)) {
       _phoneStateSubscription?.cancel();
       _phoneStateSubscription = null;
@@ -105,9 +107,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   }
 
   Future<void> loadData({bool reload = false}) async {
-    if (_attendanceResult != null) {
-      prevResultHasCurrentDate = _attendanceResult!.hasCurrentDate;
-    }
     debugPrint("loading...");
     switch (_selectionType) {
       case 'current_month':
@@ -120,7 +119,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         await _loadRangeAttendance(_selectedStartDate!, _selectedEndDate!);
         break;
     }
-    handleCallListener();
+    if (Options.reloadOnPhoneCall) {
+      handleCallListener();
+    }
     if (reload) {
       Fluttertoast.showToast(
         msg: "Reloading",
@@ -370,6 +371,25 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     }
   }
 
+  Future<void> handleNavigate(Widget screen) {
+    return Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
+    );
+  }
+
+  Future<void> navigateSettings() {
+    return handleNavigate(const SettingsScreen()).then((_) {
+      if (Options.reloadOnPhoneCall) {
+        handleCallListener();
+      } else {
+        _phoneStateSubscription?.cancel();
+        _phoneStateSubscription = null;
+        log("Call listener stopped");
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectionTitle = _getAppBarTitle();
@@ -417,12 +437,10 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   _showRangePicker();
                   break;
                 case 'edit':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SelectedContacts(),
-                    ),
-                  ).then((_) => loadData());
+                  handleNavigate(const SelectedContacts());
+                  break;
+                case 'settings':
+                  navigateSettings();
                   break;
               }
             },
@@ -464,6 +482,16 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                     Icon(Icons.person_add),
                     SizedBox(width: 8),
                     Text('Add/Edit Contacts'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'settings',
+                child: Row(
+                  children: [
+                    Icon(Icons.settings),
+                    SizedBox(width: 8),
+                    Text('Settings'),
                   ],
                 ),
               ),
