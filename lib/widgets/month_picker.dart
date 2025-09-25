@@ -36,12 +36,21 @@ Future<({int month, int year})?> showMonthPicker({
   required BuildContext context,
   int? year,
   int? month,
+  required DateTime firstDate,
+  required DateTime lastDate,
+  MonthDisplayMode displayMode = MonthDisplayMode.grid,
 }) {
   return showDialog(
     context: context,
     builder: (context) {
       return Dialog(
-        child: MonthYearPicker(initialMonth: month, initialYear: year),
+        child: MonthYearPicker(
+          selectedMonth: month,
+          selectedYear: year,
+          firstDate: firstDate,
+          lastDate: lastDate,
+          displayMode: displayMode,
+        ),
       );
     },
   );
@@ -50,15 +59,19 @@ Future<({int month, int year})?> showMonthPicker({
 class MonthYearPicker extends StatefulWidget {
   const MonthYearPicker({
     super.key,
-    this.initialMonth,
-    this.initialYear,
+    this.selectedMonth,
+    this.selectedYear,
     this.startsWithMonth = true,
-    this.displayMode = MonthDisplayMode.grid,
+    required this.displayMode,
+    required this.firstDate,
+    required this.lastDate,
   });
   final bool startsWithMonth;
-  final int? initialYear;
-  final int? initialMonth;
+  final int? selectedYear;
+  final int? selectedMonth;
   final MonthDisplayMode displayMode;
+  final DateTime firstDate;
+  final DateTime lastDate;
 
   @override
   State<MonthYearPicker> createState() => _MonthYearPickerState();
@@ -66,8 +79,8 @@ class MonthYearPicker extends StatefulWidget {
 
 class _MonthYearPickerState extends State<MonthYearPicker> {
   late bool startsWithMonth = widget.startsWithMonth;
-  late int? selectedMonth = widget.initialMonth;
-  late int? selectedYear = widget.initialYear;
+  late int? selectedMonth = widget.selectedMonth;
+  late int? selectedYear = widget.selectedYear;
 
   final ScrollController _scrollController = ScrollController();
 
@@ -115,8 +128,8 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
                     ? buildListMonthPicker()
                     : buildGridMonthPicker())
               : YearPicker(
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime.now(),
+                  firstDate: widget.firstDate,
+                  lastDate: widget.lastDate,
                   selectedDate: DateTime(
                     selectedYear ?? DateTime.now().year,
                     selectedMonth ?? DateTime.now().month,
@@ -169,15 +182,26 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
           bool isSelected = selectedMonth == index + 1;
           bool isCurrentMonth =
               now.month == index + 1 && now.year == selectedYear;
+          final thisDate = DateTime(selectedYear ?? now.year, index + 1);
+          // check its in range of firstDate,lastDate    //
+          late final bool isSelectable;
+          if (thisDate.isAfter(widget.firstDate) &&
+              thisDate.isBefore(widget.lastDate)) {
+            isSelectable = true;
+          } else {
+            isSelectable = false;
+          }
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
-              onTap: () {
-                setState(() {
-                  selectedMonth = index + 1;
-                });
-              },
+              onTap: !isSelectable
+                  ? null
+                  : () {
+                      setState(() {
+                        selectedMonth = index + 1;
+                      });
+                    },
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
@@ -195,7 +219,11 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
-                    color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                    color: isSelected
+                        ? cs.onPrimary
+                        : (isSelectable
+                              ? cs.onSurfaceVariant
+                              : cs.onSurfaceVariant.withValues(alpha: 0.6)),
                     fontWeight: isSelected
                         ? FontWeight.w500
                         : FontWeight.normal,
@@ -220,15 +248,25 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
       crossAxisSpacing: 8,
       children: List.generate(12, (index) {
         bool isSelected = selectedMonth == index + 1;
+        final thisDate = DateTime(selectedYear ?? now.year, index + 1);
         bool isCurrentMonth =
             now.month == index + 1 && now.year == selectedYear;
+        late final bool isSelectable;
+        if (thisDate.isAfter(widget.firstDate) &&
+            thisDate.isBefore(widget.lastDate)) {
+          isSelectable = true;
+        } else {
+          isSelectable = false;
+        }
         return InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () {
-            setState(() {
-              selectedMonth = index + 1;
-            });
-          },
+          onTap: !isSelectable
+              ? null
+              : () {
+                  setState(() {
+                    selectedMonth = index + 1;
+                  });
+                },
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
@@ -243,7 +281,11 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 17,
-                color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                color: isSelected
+                    ? cs.onPrimary
+                    : (isSelectable
+                          ? cs.onSurfaceVariant
+                          : cs.onSurfaceVariant.withValues(alpha: 0.6)),
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
               ),
             ),

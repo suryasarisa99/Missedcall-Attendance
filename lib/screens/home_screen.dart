@@ -281,6 +281,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
       context: context,
       year: _selectedYear,
       month: _selectedMonth,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
     );
 
     if (result != null) {
