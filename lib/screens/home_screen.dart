@@ -44,6 +44,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
       Options.selectionType; // current_month, specific_month, range
 
   StreamSubscription<PhoneState>? _phoneStateSubscription;
+  bool reverseColumns = Options.i.reverseColumns;
 
   @override
   void initState() {
@@ -335,6 +336,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
   Future<void> navigateSettings() {
     return handleNavigate(const SettingsScreen()).then((_) {
+      setState(() {
+        reverseColumns = Options.i.reverseColumns;
+      });
       if (Options.reloadOnPhoneCall) {
         handleCallListener();
       } else {
@@ -512,7 +516,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                     ),
                   ),
                   // Date column headers
-                  ...dates.map(
+                  ...(reverseColumns ? dates.reversed : dates).map(
                     (date) => Container(
                       width: dateColumnWidth,
                       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -541,7 +545,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 scrollDirection: Axis.horizontal,
                 child: RefreshIndicator(
                   onRefresh: loadData,
-
                   child: SizedBox(
                     width: scrollContainerWidth,
                     height: constraints.maxHeight,
@@ -586,16 +589,19 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                                 color: cs.onSurfaceVariant,
                               ),
                               // Attendance columns
-                              ...entry.value.asMap().entries.map((
-                                attendanceEntry,
-                              ) {
-                                final present = attendanceEntry.value;
-                                return _buildAttendanceCell(
-                                  present,
-                                  dateColumnWidth,
-                                  index: index,
-                                );
-                              }),
+                              ...(reverseColumns
+                                      ? entry.value.reversed.toList()
+                                      : entry.value)
+                                  .asMap()
+                                  .entries
+                                  .map((attendanceEntry) {
+                                    final present = attendanceEntry.value;
+                                    return _buildAttendanceCell(
+                                      present,
+                                      dateColumnWidth,
+                                      index: index,
+                                    );
+                                  }),
                             ],
                           ),
                         );
@@ -782,7 +788,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
           _buildNameCell("Total", 120),
           // count of students present for each day
           ...List.generate(totalDays, (index) {
-            final count = _attendanceResult!.getPresentCountForDay(index);
+            int fixedIndex = reverseColumns ? totalDays - 1 - index : index;
+            final count = _attendanceResult!.getPresentCountForDay(fixedIndex);
             return Container(
               width: dateColumnWidth,
               alignment: Alignment.center,

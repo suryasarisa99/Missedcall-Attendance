@@ -2,7 +2,13 @@ import 'package:attendance/main.dart';
 import 'package:flutter/cupertino.dart';
 
 class Options {
-  Options._();
+  // singleton pattern
+  static final Options i = Options._();
+  Options._() {
+    _reverseColumns = prefs?.getBool('reverseColumns') ?? true;
+  }
+
+  late bool _reverseColumns;
 
   static String get selectionType =>
       prefs?.getString('selectionType') ?? 'current_month';
@@ -79,5 +85,12 @@ class Options {
   static set reloadOnPhoneCall(bool value) {
     prefs?.setBool('reloadOnPhoneCall', value);
     debugPrint('Reload on phone call set to: $value');
+  }
+
+  bool get reverseColumns => i._reverseColumns;
+  set reverseColumns(bool value) {
+    i._reverseColumns = value;
+    prefs?.setBool('reverseColumns', value);
+    debugPrint('Reverse columns set to: $value');
   }
 }

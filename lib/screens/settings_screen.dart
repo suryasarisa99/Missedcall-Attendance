@@ -9,6 +9,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final Options options = Options.i;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,6 +41,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onChanged: (bool value) {
               setState(() {
                 Options.reloadOnPhoneCall = value;
+              });
+            },
+          ),
+
+          SwitchListTile(
+            value: options.reverseColumns,
+            title: const Text('Reverse Columns'),
+            onChanged: (bool value) {
+              setState(() {
+                options.reverseColumns = value;
               });
             },
           ),
