@@ -7,6 +7,7 @@ import 'package:attendance/screens/statistics_screen.dart';
 import 'package:attendance/services/attendance.dart';
 import 'package:attendance/services/contact_manager.dart';
 import 'package:attendance/services/options.dart';
+import 'package:attendance/widgets/month_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -275,70 +276,16 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     }
   }
 
-  void _showMonthPicker() {
-    final now = DateTime.now();
-    showDialog(
+  _showMonthPicker() async {
+    final result = await showMonthPicker(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Month'),
-        content: SizedBox(
-          width: 300,
-          height: 300,
-          child: YearPicker(
-            firstDate: DateTime(2020),
-            lastDate: now,
-            selectedDate: DateTime(
-              _selectedYear ?? now.year,
-              _selectedMonth ?? now.month,
-            ),
-            onChanged: (date) {
-              Navigator.pop(context);
-              _showMonthPickerForYear(date.year);
-            },
-          ),
-        ),
-      ),
+      year: _selectedYear,
+      month: _selectedMonth,
     );
-  }
 
-  void _showMonthPickerForYear(int year) {
-    final months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Select Month - $year'),
-        content: SizedBox(
-          width: 300,
-          height: 400,
-          child: ListView.builder(
-            itemCount: 12,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(months[index]),
-                onTap: () {
-                  Navigator.pop(context);
-                  _loadSpecificMonthAttendance(index + 1, year);
-                },
-              );
-            },
-          ),
-        ),
-      ),
-    );
+    if (result != null) {
+      _loadSpecificMonthAttendance(result.month, result.year);
+    }
   }
 
   void _showRangePicker() async {
@@ -592,6 +539,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 scrollDirection: Axis.horizontal,
                 child: RefreshIndicator(
                   onRefresh: loadData,
+
                   child: SizedBox(
                     width: scrollContainerWidth,
                     height: constraints.maxHeight,
