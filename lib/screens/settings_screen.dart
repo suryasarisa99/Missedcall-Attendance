@@ -19,28 +19,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           SwitchListTile(
             title: const Text('Confirm Swipe to Delete'),
-            value: Options.confirmSwipeToDelete,
+            value: options.confirmSwipeToDelete,
             onChanged: (bool value) {
               setState(() {
-                Options.confirmSwipeToDelete = value;
+                options.confirmSwipeToDelete = value;
               });
             },
           ),
           SwitchListTile(
             title: const Text('Reload on App Resumed'),
-            value: Options.reloadOnAppResume,
+            value: options.reloadOnAppResume,
             onChanged: (bool value) {
               setState(() {
-                Options.reloadOnAppResume = value;
+                options.reloadOnAppResume = value;
               });
             },
           ),
           SwitchListTile(
             title: const Text('Reload on Phone Call'),
-            value: Options.reloadOnPhoneCall,
+            value: options.reloadOnPhoneCall,
             onChanged: (bool value) {
               setState(() {
-                Options.reloadOnPhoneCall = value;
+                options.reloadOnPhoneCall = value;
               });
             },
           ),

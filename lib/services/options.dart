@@ -6,9 +6,15 @@ class Options {
   static final Options i = Options._();
   Options._() {
     _reverseColumns = prefs?.getBool('reverseColumns') ?? true;
+    _confirmSwipeToDelete = prefs?.getBool('confirmSwipeToDelete') ?? true;
+    _reloadOnAppResume = prefs?.getBool('reloadOnAppResume') ?? true;
+    _reloadOnPhoneCall = prefs?.getBool('reloadOnPhoneCall') ?? true;
   }
 
   late bool _reverseColumns;
+  late bool _confirmSwipeToDelete;
+  late bool _reloadOnAppResume;
+  late bool _reloadOnPhoneCall;
 
   static String get selectionType =>
       prefs?.getString('selectionType') ?? 'current_month';
@@ -67,22 +73,22 @@ class Options {
     }
   }
 
-  static bool get confirmSwipeToDelete =>
-      prefs?.getBool('confirmSwipeToDelete') ?? true;
-  static set confirmSwipeToDelete(bool value) {
+  bool get confirmSwipeToDelete => _confirmSwipeToDelete;
+  set confirmSwipeToDelete(bool value) {
+    _confirmSwipeToDelete = value;
     prefs?.setBool('confirmSwipeToDelete', value);
   }
 
-  static bool get reloadOnAppResume =>
-      prefs?.getBool('reloadOnAppResume') ?? true;
-  static set reloadOnAppResume(bool value) {
+  bool get reloadOnAppResume => i._reloadOnAppResume;
+  set reloadOnAppResume(bool value) {
+    i._reloadOnAppResume = value;
     prefs?.setBool('reloadOnAppResume', value);
     debugPrint('Reload on app resume set to: $value');
   }
 
-  static bool get reloadOnPhoneCall =>
-      prefs?.getBool('reloadOnPhoneCall') ?? true;
-  static set reloadOnPhoneCall(bool value) {
+  bool get reloadOnPhoneCall => i._reloadOnPhoneCall;
+  set reloadOnPhoneCall(bool value) {
+    i._reloadOnPhoneCall = value;
     prefs?.setBool('reloadOnPhoneCall', value);
     debugPrint('Reload on phone call set to: $value');
   }

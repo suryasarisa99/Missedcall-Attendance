@@ -66,7 +66,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       log("App resumed");
-      if (Options.reloadOnAppResume &&
+      if (Options.i.reloadOnAppResume &&
           (_attendanceResult?.hasCurrentDate ?? false)) {
         loadData();
       }
@@ -121,7 +121,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         await _loadRangeAttendance(_selectedStartDate!, _selectedEndDate!);
         break;
     }
-    if (Options.reloadOnPhoneCall) {
+    if (Options.i.reloadOnPhoneCall) {
       handleCallListener();
     }
     if (reload) {
@@ -339,7 +339,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
       setState(() {
         reverseColumns = Options.i.reverseColumns;
       });
-      if (Options.reloadOnPhoneCall) {
+      if (Options.i.reloadOnPhoneCall) {
         handleCallListener();
       } else {
         _phoneStateSubscription?.cancel();

@@ -69,7 +69,7 @@ class _SelectedContactsState extends State<SelectedContacts>
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final confirmDismiss = Options.confirmSwipeToDelete;
+    final confirmDismiss = Options.i.confirmSwipeToDelete;
     return Scaffold(
       appBar: AppBar(title: const Text('Selected Contacts')),
       floatingActionButton: Column(
