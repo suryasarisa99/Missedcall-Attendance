@@ -1,6 +1,4 @@
 import 'package:attendance/screens/home_screen.dart';
-import 'package:attendance/screens/list_device_contacts.dart';
-import 'package:attendance/screens/selected_contacts.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

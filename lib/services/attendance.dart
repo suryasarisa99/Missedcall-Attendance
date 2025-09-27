@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:attendance/services/contact_manager.dart';
 import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';

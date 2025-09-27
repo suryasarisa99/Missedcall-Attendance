@@ -1,7 +1,6 @@
 import 'package:attendance/screens/list_device_contacts.dart';
 import 'package:attendance/services/contact_manager.dart';
 import 'package:attendance/services/options.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 
@@ -209,4 +208,9 @@ class _SelectedContactsState extends State<SelectedContacts>
       ),
     );
   }
+}
+
+@Preview(name: 'My Sample Text')
+Widget mySampleText() {
+  return const Text('Hello, World!');
 }

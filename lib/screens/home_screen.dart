@@ -24,16 +24,13 @@ class AttendanceScreen extends StatefulWidget {
 class _AttendanceScreenState extends State<AttendanceScreen>
     with WidgetsBindingObserver {
   final ContactManager _contactManager = ContactManager.instance;
-  bool _isLoading = false;
   AttendanceResult? _attendanceResult;
   AttendanceStats? _attendanceStats;
   var scaffoldKey = GlobalKey<ScaffoldState>();
+
   // Separate controllers for header and content
   final ScrollController _headerScrollController = ScrollController();
   final ScrollController _contentScrollController = ScrollController();
-
-  // Tab controller for switching between table and stats
-  // late TabController _tabController;
 
   // Date selection
   DateTime? _selectedStartDate = Options.selectedStartDate;
@@ -124,7 +121,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     if (Options.i.reloadOnPhoneCall) {
       handleCallListener();
     }
-    if (reload) {
+    if (reload && mounted) {
       Fluttertoast.showToast(
         msg: "Reloading",
         toastLength: Toast.LENGTH_SHORT,
@@ -166,16 +163,12 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
   Future<void> _loadCurrentMonthAttendance() async {
     setState(() {
-      _isLoading = true;
       setSelectionType('current_month');
     });
 
     final status = await Permission.phone.status;
     if (!status.isGranted) {
       await _requestPermission();
-      setState(() {
-        _isLoading = false;
-      });
       return;
     }
 
@@ -196,16 +189,11 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         msg: "Error loading attendance: $e",
         toastLength: Toast.LENGTH_LONG,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
   Future<void> _loadSpecificMonthAttendance(int month, int year) async {
     setState(() {
-      _isLoading = true;
       setSelectionType('specific_month');
       _selectedMonth = month;
       _selectedYear = year;
@@ -230,10 +218,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         msg: "Error loading attendance: $e",
         toastLength: Toast.LENGTH_LONG,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -242,7 +226,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     DateTime endDate,
   ) async {
     setState(() {
-      _isLoading = true;
       setSelectionType('range');
       _selectedStartDate = startDate;
       _selectedEndDate = endDate;
@@ -270,10 +253,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         msg: "Error loading attendance: $e",
         toastLength: Toast.LENGTH_LONG,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -473,7 +452,6 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     final cs = Theme.of(context).colorScheme;
     final appBarColor = cs.primaryContainer.withValues(alpha: 0.22);
     final dividerClr = Theme.of(context).dividerColor.withValues(alpha: 0.2);
-    final border = BorderSide(color: dividerClr, width: 0.5);
     final titlesClr = cs.onPrimaryContainer.withValues(alpha: 0.9);
     final width = MediaQuery.sizeOf(context).width;
     final scrollContainerWidth = totalWidth > width ? totalWidth : width;
@@ -574,7 +552,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                               bottom: BorderSide(
                                 color: Theme.of(
                                   context,
-                                ).dividerColor.withOpacity(0.3),
+                                ).dividerColor.withValues(alpha: 0.3),
                                 width: 0.5,
                               ),
                             ),

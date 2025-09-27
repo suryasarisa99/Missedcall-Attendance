@@ -1,11 +1,9 @@
-// import 'dart:convert';
 import 'dart:convert';
 
 import 'package:attendance/main.dart';
 
 class ContactManager {
   static final ContactManager instance = ContactManager._internal();
-  factory ContactManager._() => instance;
 
   ContactManager._internal() {
     final contactsJson = prefs!.getString('contacts') ?? '[]';
@@ -13,16 +11,11 @@ class ContactManager {
     _contacts = (json.decode(contactsJson) as List)
         .map((data) => MyContact.fromMap(data))
         .toList();
-    // _contactsMap = {
-    //   for (var contact in _contacts) contact.phoneNumber: contact.name,
-    // };
   }
 
   late List<MyContact> _contacts;
-  // late Map<String, String> _contactsMap;
 
   List<MyContact> get contacts => _contacts;
-  // Map<String, String> get contactsMap => _contactsMap;
 
   Map<String, String> getContactMap() {
     return {for (var contact in _contacts) contact.phoneNumber: contact.name};
@@ -30,13 +23,11 @@ class ContactManager {
 
   addContact(MyContact contact) {
     _contacts.add(contact);
-    // _contactsMap[contact.phoneNumber] = contact.name;
     updateSavedPrefs();
   }
 
   removeContact(String number) {
     _contacts.removeWhere((contact) => contact.phoneNumber == number);
-    // _contactsMap.remove(number);
     updateSavedPrefs();
   }
 
@@ -47,7 +38,6 @@ class ContactManager {
     final MyContact item = _contacts.removeAt(oldIndex);
     _contacts.insert(newIndex, item);
 
-    // Save to preferences
     updateSavedPrefs();
   }
 

@@ -161,7 +161,7 @@ class Statisticsscreen extends StatelessWidget {
                                 : Colors.red,
                           ),
                         );
-                      }).toList(),
+                      }),
                     ],
                   ),
                 ),
@@ -289,8 +289,6 @@ class Statisticsscreen extends StatelessWidget {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    // Colors.blue.withOpacity(0.3),
-                    // Colors.purple.withOpacity(0.1),
                     cs.primary.withValues(alpha: 0.3),
                     cs.tertiary.withValues(alpha: 0.1),
                   ],
